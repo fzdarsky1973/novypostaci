@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naše Banda - Týmový Portál</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 antialiased flex flex-col">
+
+    <!-- TOP HEADER -->
+    <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white text-indigo-700 p-2 rounded-lg font-black text-xl shadow-inner">
+                    NB
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Naše Banda</h1>
+                    <p class="text-xs text-indigo-200">Správa týmu a akcí</p>
+                </div>
+            </div>
+
+            <!-- User Auth Bar -->
+            <div id="user-nav-area" class="flex items-center space-x-3"></div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-grow max-w-6xl w-full mx-auto p-4 md:p-6">
+        
+        <!-- LOGIN / REGISTRATION VIEW -->
+        <div id="auth-view" class="max-w-md mx-auto my-8 bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-slate-200">
+            
+            <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl mb-6">
+                <button type="button" id="tab-login" onclick="switchAuthMode('login')" class="py-2 text-sm font-semibold rounded-lg transition bg-white text-indigo-600 shadow-sm cursor-pointer">
+                    Přihlášení
+                </button>
+                <button type="button" id="tab-register" onclick="switchAuthMode('register')" class="py-2 text-sm font-semibold rounded-lg transition text-slate-600 hover:text-slate-900 cursor-pointer">
+                    Registrace
+                </button>
+            </div>
+
+            <div class="text-center mb-6">
+                <h2 id="auth-title" class="text-2xl font-bold text-slate-900">Vítejte zpět</h2>
+                <p id="auth-subtitle" class="text-sm text-slate-500 mt-1">Přihlaste se ke svému účtu v týmu.</p>
+            </div>
+
+            <div id="auth-alert" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
+
+            <form id="auth-form" onsubmit="handleAuthSubmit(event)" autocomplete="on" class="space-y-4">
+                <div id="name-field" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Jméno a Příjmení *</label>
+                    <input type="text" id="auth-name" name="name" autocomplete="name" placeholder="Jan Novák" 
+                           class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">E-mail *</label>
+                    <input type="email" id="auth-email" name="email" required autocomplete="username" placeholder="jan.novak@example.com" 
+                           class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Heslo *</label>
+                    <input type="password" id="auth-password" name="password" required autocomplete="current-password" placeholder="••••••••" 
+                           class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div id="phone-field" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Telefonní číslo</label>
+                    <input type="tel" id="auth-phone" name="phone" autocomplete="tel" placeholder="+420 123 456 789" 
+                           class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div id="address-field" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Adresa / Bydliště</label>
+                    <input type="text" id="auth-address" name="address" placeholder="Hlavní 123, Praha" 
+                           class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div id="admin-req-field" class="hidden items-center space-x-2 pt-2">
+                    <input type="checkbox" id="auth-req-admin" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
+                    <label for="auth-req-admin" class="text-sm text-slate-700 font-medium">Žádám o administrátorská práva</label>
+                </div>
+
+                <button type="submit" id="auth-submit-btn" 
+                        class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition cursor-pointer">
+                    Přihlásit se
+                </button>
+            </form>
+        </div>
+
+        <!-- APP DASHBOARD VIEW -->
+        <div id="app-view" class="hidden space-y-6">
+            
+            <input type="file" id="import-users-file-input" onchange="importUsersData(event)" accept=".json" class="hidden">
+            <input type="file" id="import-events-file-input" onchange="importEventsData(event)" accept=".json" class="hidden">
+
+            <!-- Navigation Tabs -->
+            <div class="flex flex-wrap border-b border-slate-200 bg-white rounded-xl shadow-sm p-1 gap-1">
+                <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="tab-btn flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium text-sm transition">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span>Nástěnka</span>
+                </button>
+                <button onclick="switchTab('events')" id="tab-btn-events" class="tab-btn flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium text-sm transition">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                    <span>Akce & Docházka</span>
+                </button>
+                <button onclick="switchTab('members')" id="tab-btn-members" class="tab-btn flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium text-sm transition">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span>Seznam Členů</span>
+                </button>
+                <button onclick="switchTab('chat')" id="tab-btn-chat" class="tab-btn flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium text-sm transition">
+                    <i data-lucide="message-square" class="w-4 h-4"></i>
+                    <span>Týmový Chat</span>
+                </button>
+                <button onclick="switchTab('profile')" id="tab-btn-profile" class="tab-btn flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium text-sm transition">
+                    <i data-lucide="user-cog" class="w-4 h-4"></i>
+                    <span>Můj Profil</span>
+                </button>
+                <button onclick="switchTab('approvals')" id="tab-btn-approvals" class="tab-btn hidden flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium text-sm transition bg-amber-50 text-amber-700 hover:bg-amber-100">
+                    <i data-lucide="user-check" class="w-4 h-4"></i>
+                    <span>Žádosti o schválení</span>
+                    <span id="pending-badge" class="ml-1 bg-amber-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">0</span>
+                </button>
+            </div>
+
+            <!-- TAB 1: DASHBOARD -->
+            <div id="tab-dashboard" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div onclick="switchTab('members')" class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center space-x-4 cursor-pointer hover:border-indigo-400 hover:shadow transition">
+                        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg">
+                            <i data-lucide="users" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500 uppercase font-semibold">Aktivní Členové</p>
+                            <h3 id="stat-members-count" class="text-2xl font-bold text-slate-800">0 / 40</h3>
+                        </div>
+                    </div>
+                    <div onclick="switchTab('events')" class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center space-x-4 cursor-pointer hover:border-emerald-400 hover:shadow transition">
+                        <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+                            <i data-lucide="calendar-check" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500 uppercase font-semibold">Nadcházející Akce</p>
+                            <h3 id="stat-events-count" class="text-2xl font-bold text-slate-800">0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center space-x-4">
+                        <div class="p-3 bg-amber-50 text-amber-600 rounded-lg">
+                            <i data-lucide="shield" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500 uppercase font-semibold">Váš Status</p>
+                            <h3 id="stat-user-role" class="text-lg font-bold text-slate-800">Hráč</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="megaphone" class="w-5 h-5 text-indigo-600"></i>
+                            Týmová Nástěnka & Oznámení
+                        </h3>
+                        <button id="add-announcement-btn" onclick="openAnnouncementModal()" class="hidden text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-semibold px-3 py-1.5 rounded-lg transition cursor-pointer">
+                            + Přidat Oznámení
+                        </button>
+                    </div>
+                    <div id="announcements-list" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- TAB 2: EVENTS & ATTENDANCE -->
+            <div id="tab-events" class="tab-content hidden space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Kalendář Akcí & Hlasování</h2>
+                        <p id="events-subtitle" class="text-xs text-slate-500">Dnešní den je v kalendáři zvýrazněn. Proběhlé akce jsou barevně odlišeny jako konané. Administrátor může akce upravovat nebo mazat přímo v kalendáři.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div id="admin-events-actions" class="hidden items-center space-x-2">
+                            <button id="toggle-past-events-btn" onclick="toggleShowPastEvents()" class="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1 cursor-pointer">
+                                <i data-lucide="history" class="w-3.5 h-3.5"></i> <span id="past-events-btn-text">Zobrazit minulá akce</span>
+                            </button>
+                            <button onclick="exportEventsData()" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1 cursor-pointer">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i> Export Akcí
+                            </button>
+                            <button onclick="triggerImportEvents()" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1 cursor-pointer">
+                                <i data-lucide="upload" class="w-3.5 h-3.5"></i> Import Akcí
+                            </button>
+                        </div>
+                        <button id="create-event-btn" onclick="openEventModal()" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow transition items-center gap-2 cursor-pointer">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Vytvořit Novou Akci
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KALENDÁŘ -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <h3 id="calendar-month-title" class="font-bold text-slate-800 text-base capitalize"></h3>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="resetCalendarToCurrentMonth()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition flex items-center gap-1 cursor-pointer" title="Zobrazit aktuální měsíc">
+                                <i data-lucide="calendar-days" class="w-3.5 h-3.5"></i> Dnešní měsíc
+                            </button>
+                            <div class="flex space-x-1">
+                                <button onclick="changeCalendarMonth(-1)" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer transition" title="Předchozí měsíc">
+                                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                                </button>
+                                <button onclick="changeCalendarMonth(1)" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer transition" title="Následující měsíc">
+                                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Legenda -->
+                    <div class="flex flex-wrap gap-4 text-xs font-semibold text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Jdu (Potvrzeno)</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Možná</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span> Nejdu</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-200 border border-rose-400 inline-block"></span> Nehlasováno</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-slate-400 inline-block"></span> Konaná (Minulá akce)</span>
+                    </div>
+
+                    <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-bold text-slate-400 pb-1">
+                        <div>Po</div><div>Út</div><div>St</div><div>Čt</div><div>Pá</div><div>So</div><div>Ne</div>
+                    </div>
+                    <div id="calendar-days-grid" class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs"></div>
+                </div>
+
+                <!-- SEZNAM AKCÍ -->
+                <div id="events-list" class="grid grid-cols-1 gap-6 pt-4"></div>
+            </div>
+
+            <!-- TAB 3: MEMBERS DIRECTORY -->
+            <div id="tab-members" class="tab-content hidden space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Seznam Členů Týmu</h2>
+                        <p class="text-xs text-slate-500">Aktivní schválení členové (Max. 40 lidí)</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <input type="text" id="member-search" oninput="renderMembers()" placeholder="Hledat jméno, telefon..." 
+                               class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        
+                        <div id="admin-users-actions" class="hidden items-center space-x-2">
+                            <button onclick="openAddUserModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1 cursor-pointer shadow-sm">
+                                <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> + Přidat Člena
+                            </button>
+                            <button onclick="exportUsersData()" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1 cursor-pointer">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i> Export Členů
+                            </button>
+                            <button onclick="triggerImportUsers()" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1 cursor-pointer">
+                                <i data-lucide="upload" class="w-3.5 h-3.5"></i> Import Členů
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="members-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </div>
+
+            <!-- TAB 4: CHAT -->
+            <div id="tab-chat" class="tab-content hidden bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-[500px]">
+                <div class="p-4 border-b border-slate-200 bg-slate-50 rounded-t-xl">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="messages-square" class="w-5 h-5 text-indigo-600"></i>
+                        Týmová Diskuze
+                    </h3>
+                </div>
+                <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3"></div>
+                <form onsubmit="sendChatMessage(event)" class="p-3 border-t border-slate-200 flex gap-2">
+                    <input type="text" id="chat-input" placeholder="Napište zprávu pro tým..." required
+                           class="flex-grow px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1 cursor-pointer">
+                        <i data-lucide="send" class="w-4 h-4"></i> Odeslat
+                    </button>
+                </form>
+            </div>
+
+            <!-- TAB 5: MY PROFILE -->
+            <div id="tab-profile" class="tab-content hidden max-w-xl mx-auto bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Úprava Osobního Profilu</h2>
+                    <p class="text-xs text-slate-500 mt-1">Zde můžete změnit své kontaktní údaje, heslo nebo e-mailová upozornění.</p>
+                </div>
+
+                <div id="profile-alert" class="hidden p-3 rounded-lg text-sm"></div>
+
+                <form onsubmit="handleSaveOwnProfile(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Jméno a Příjmení *</label>
+                        <input type="text" id="prof-name" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">E-mailová adresa *</label>
+                        <input type="email" id="prof-email" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Telefonní číslo</label>
+                        <input type="tel" id="prof-phone" placeholder="+420 123 456 789" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Adresa / Bydliště</label>
+                        <input type="text" id="prof-address" placeholder="Ulica 123, Město" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+
+                    <div class="bg-indigo-50/60 p-3 rounded-lg border border-indigo-100 flex items-start space-x-3">
+                        <input type="checkbox" id="prof-email-notify" class="w-4 h-4 mt-0.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
+                        <label for="prof-email-notify" class="text-xs text-slate-700 cursor-pointer">
+                            <span class="font-bold text-slate-800 block mb-0.5">E-mailová upozornění</span>
+                            Zasílat automatické e-mailové připomínky 2 dny před začátkem nadcházející akce.
+                        </label>
+                    </div>
+
+                    <hr class="border-slate-100 my-4">
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nové Heslo (ponechte prázdné pro zachování stávajícího)</label>
+                        <input type="password" id="prof-password" placeholder="••••••••" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow transition cursor-pointer">
+                        Uložit Změny Profilu
+                    </button>
+                </form>
+            </div>
+
+            <!-- TAB 6: APPROVALS (Admin Only) -->
+            <div id="tab-approvals" class="tab-content hidden space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Žádosti o Schválení Účtu</h2>
+                    <p class="text-xs text-slate-500">Nové registrace vyžadují schválení administrátorem.</p>
+                </div>
+                <div id="approvals-list" class="space-y-3"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MODAL: RYCHLÉ HLASOVÁNÍ Z KALENDÁŘE -->
+    <div id="rsvp-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-4">
+            <h3 id="rsvp-modal-title" class="text-lg font-bold text-slate-900"></h3>
+            <p id="rsvp-modal-info" class="text-xs text-slate-500"></p>
+            
+            <div class="space-y-2 pt-2">
+                <button onclick="setRsvpFromModal('YES')" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                    <i data-lucide="check" class="w-4 h-4"></i> Jdu (Potvrzuji)
+                </button>
+                <button onclick="setRsvpFromModal('MAYBE')" class="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                    <i data-lucide="help-circle" class="w-4 h-4"></i> Možná
+                </button>
+                <button onclick="setRsvpFromModal('NO')" class="w-full py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                    <i data-lucide="x" class="w-4 h-4"></i> Nejdu
+                </button>
+            </div>
+
+            <div class="pt-2 text-right">
+                <button onclick="closeRsvpModal()" class="text-xs text-slate-500 hover:text-slate-800 font-medium">Zavřít</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CREATE / EDIT EVENT -->
+    <div id="event-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <h3 id="event-modal-title" class="text-lg font-bold text-slate-900">Vytvořit Novou Akci</h3>
+            
+            <form onsubmit="handleSaveEvent(event)" class="space-y-3">
+                <input type="hidden" id="event-edit-id">
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Název akce *</label>
+                    <input type="text" id="event-title" required placeholder="Trénink, Zápas, Pivo..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Datum a Čas * (Přednastaveno 20:00)</label>
+                    <input type="datetime-local" id="event-date" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm mb-2">
+                    
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                        <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+                            <span id="modal-cal-title"></span>
+                            <div class="flex space-x-1">
+                                <button type="button" onclick="changeModalCalMonth(-1)" class="p-1 hover:bg-slate-200 rounded cursor-pointer"><i data-lucide="chevron-left" class="w-3.5 h-3.5"></i></button>
+                                <button type="button" onclick="changeModalCalMonth(1)" class="p-1 hover:bg-slate-200 rounded cursor-pointer"><i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400">
+                            <div>Po</div><div>Út</div><div>St</div><div>Čt</div><div>Pá</div><div>So</div><div>Ne</div>
+                        </div>
+                        <div id="modal-cal-grid" class="grid grid-cols-7 gap-1 text-center text-xs"></div>
+                        <p class="text-[10px] text-slate-400 italic">Podtržené dny <u>12</u> již mají vytvořenou akci.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Místo konání *</label>
+                    <input type="text" id="event-location" required placeholder="Tělocvična, Hřiště..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Kapacita (max lidí)</label>
+                    <input type="number" id="event-capacity" min="1" max="40" value="14" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Popis / Poznámka</label>
+                    <textarea id="event-desc" rows="2" placeholder="S sebou dresy a dobrou náladu..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></textarea>
+                </div>
+                <div class="flex items-center justify-between pt-2">
+                    <button type="button" onclick="switchTab('dashboard'); closeEventModal();" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 cursor-pointer">
+                        <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Přejít do nástěnky
+                    </button>
+                    <div class="flex space-x-2">
+                        <button type="button" onclick="closeEventModal()" class="px-4 py-2 border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 cursor-pointer">Zrušit</button>
+                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 cursor-pointer">Uložit Akci</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADMIN EDIT USER -->
+    <div id="admin-user-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <h3 class="text-lg font-bold text-slate-900">Úprava Člena (Admin)</h3>
+            <form onsubmit="handleAdminSaveUser(event)" class="space-y-3">
+                <input type="hidden" id="admin-edit-userid">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Jméno a Příjmení *</label>
+                    <input type="text" id="admin-edit-name" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">E-mail *</label>
+                    <input type="email" id="admin-edit-email" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Telefon</label>
+                    <input type="tel" id="admin-edit-phone" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Adresa / Bydliště</label>
+                    <input type="text" id="admin-edit-address" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div class="flex items-center space-x-2 py-1">
+                    <input type="checkbox" id="admin-edit-notify" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
+                    <label for="admin-edit-notify" class="text-xs text-slate-700 font-medium">Zasílat e-mailové připomínky akcí (2 dny předem)</label>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nové Heslo (ponechte prázdné pro beze změny)</label>
+                    <input type="text" id="admin-edit-password" placeholder="Zadejte nové heslo..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeAdminUserModal()" class="px-4 py-2 border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 cursor-pointer">Zrušit</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 cursor-pointer">Uložit Změny</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADMIN ADD USER -->
+    <div id="admin-add-user-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <h3 class="text-lg font-bold text-slate-900">Přidat Nového Člena (Admin)</h3>
+            <form onsubmit="handleAdminAddUser(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Jméno a Příjmení *</label>
+                    <input type="text" id="admin-add-name" required placeholder="Jan Novák" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">E-mail *</label>
+                    <input type="email" id="admin-add-email" required placeholder="jan.novak@example.com" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Telefon</label>
+                    <input type="tel" id="admin-add-phone" placeholder="+420 123 456 789" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Adresa / Bydliště</label>
+                    <input type="text" id="admin-add-address" placeholder="Hlavní 123, Praha" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Heslo *</label>
+                    <input type="text" id="admin-add-password" required placeholder="••••••••" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Role *</label>
+                    <select id="admin-add-role" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                        <option value="Hráč">Hráč</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeAddUserModal()" class="px-4 py-2 border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 cursor-pointer">Zrušit</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 cursor-pointer">Vytvořit Člena</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let state = {
+            users: JSON.parse(localStorage.getItem('nb_users')) || [],
+            events: JSON.parse(localStorage.getItem('nb_events')) || [],
+            announcements: JSON.parse(localStorage.getItem('nb_announcements')) || [],
+            chat: JSON.parse(localStorage.getItem('nb_chat')) || [],
+            currentUserEmail: localStorage.getItem('nb_current_user') || null,
+            isRegisterMode: false,
+            showPastEvents: false,
+            calendarDate: new Date(),
+            modalCalDate: new Date(),
+            activeRsvpEventId: null
+        };
+
+        function saveState() {
+            localStorage.setItem('nb_users', JSON.stringify(state.users));
+            localStorage.setItem('nb_events', JSON.stringify(state.events));
+            localStorage.setItem('nb_announcements', JSON.stringify(state.announcements));
+            localStorage.setItem('nb_chat', JSON.stringify(state.chat));
+            if(state.currentUserEmail) {
+                localStorage.setItem('nb_current_user', state.currentUserEmail);
+            } else {
+                localStorage.removeItem('nb_current_user');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            lucide.createIcons();
+            renderApp();
+        });
+
+        function getCurrentUser() {
+            return state.users.find(u => u.email.toLowerCase() === (state.currentUserEmail || '').toLowerCase());
+        }
+
+        function switchAuthMode(mode) {
+            state.isRegisterMode = (mode === 'register');
+            const title = document.getElementById('auth-title');
+            const subtitle = document.getElementById('auth-subtitle');
+            const submitBtn = document.getElementById('auth-submit-btn');
+            const tabLogin = document.getElementById('tab-login');
+            const tabRegister = document.getElementById('tab-register');
+            
+            const nameField = document.getElementById('name-field');
+            const nameInput = document.getElementById('auth-name');
+            const phoneField = document.getElementById('phone-field');
+            const addressField = document.getElementById('address-field');
+            const adminReqField = document.getElementById('admin-req-field');
+            const alertBox = document.getElementById('auth-alert');
+
+            alertBox.classList.add('hidden');
+
+            if(state.isRegisterMode) {
+                tabRegister.className = "py-2 text-sm font-semibold rounded-lg transition bg-white text-indigo-600 shadow-sm cursor-pointer";
+                tabLogin.className = "py-2 text-sm font-semibold rounded-lg transition text-slate-600 hover:text-slate-900 cursor-pointer";
+                
+                title.innerText = "Registrace Nového Člena";
+                subtitle.innerText = "První zaregistrovaný uživatel se stane automaticky Administrátorem!";
+                submitBtn.innerText = "Zaregistrovat se";
+                
+                nameField.classList.remove('hidden');
+                nameInput.setAttribute('required', 'required');
+                
+                phoneField.classList.remove('hidden');
+                addressField.classList.remove('hidden');
+                adminReqField.classList.remove('hidden');
+                adminReqField.classList.add('flex');
+            } else {
+                tabLogin.className = "py-2 text-sm font-semibold rounded-lg transition bg-white text-indigo-600 shadow-sm cursor-pointer";
+                tabRegister.className = "py-2 text-sm font-semibold rounded-lg transition text-slate-600 hover:text-slate-900 cursor-pointer";
+                
+                title.innerText = "Vítejte zpět";
+                subtitle.innerText = "Přihlaste se ke svému účtu v týmu.";
+                submitBtn.innerText = "Přihlásit se";
+                
+                nameField.classList.add('hidden');
+                nameInput.removeAttribute('required');
+                
+                phoneField.classList.add('hidden');
+                addressField.classList.add('hidden');
+                adminReqField.classList.add('hidden');
+                adminReqField.classList.remove('flex');
+            }
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const alertBox = document.getElementById('auth-alert');
+            alertBox.classList.add('hidden');
+
+            const email = document.getElementById('auth-email').value.trim().toLowerCase();
+            const password = document.getElementById('auth-password').value.trim();
+
+            if(state.isRegisterMode) {
+                const name = document.getElementById('auth-name').value.trim();
+                const phone = document.getElementById('auth-phone').value.trim();
+                const address = document.getElementById('auth-address').value.trim();
+                const reqAdmin = document.getElementById('auth-req-admin').checked;
+
+                if(state.users.some(u => u.email.toLowerCase() === email)) {
+                    showAlert('Tento e-mail je již zaregistrovaný!', 'bg-rose-100 text-rose-700');
+                    return;
+                }
+
+                const isFirstUser = state.users.length === 0;
+                const newUser = {
+                    id: Date.now().toString(),
+                    name: name || email.split('@')[0],
+                    email: email,
+                    password: password,
+                    phone: phone || '',
+                    address: address || '',
+                    emailNotify: true,
+                    role: (isFirstUser || reqAdmin) ? 'Admin' : 'Hráč',
+                    approved: isFirstUser,
+                    createdAt: new Date().toISOString()
+                };
+
+                state.users.push(newUser);
+                saveState();
+
+                if(isFirstUser) {
+                    state.currentUserEmail = newUser.email;
+                    saveState();
+                    renderApp();
+                } else {
+                    showAlert('Registrace proběhla úspěšně! Váš účet nyní čeká na schválení administrátorem.', 'bg-emerald-100 text-emerald-800');
+                    switchAuthMode('login');
+                }
+
+            } else {
+                const user = state.users.find(u => u.email.toLowerCase() === email && u.password === password);
+
+                if(!user) {
+                    showAlert('Neplatný e-mail nebo heslo!', 'bg-rose-100 text-rose-700');
+                    return;
+                }
+
+                if(!user.approved) {
+                    showAlert('Váš účet stále čeká na schválení administrátorem týmu.', 'bg-amber-100 text-amber-800');
+                    return;
+                }
+
+                state.currentUserEmail = user.email;
+                saveState();
+                renderApp();
+            }
+        }
+
+        function logout() {
+            state.currentUserEmail = null;
+            saveState();
+            renderApp();
+        }
+
+        function showAlert(msg, bgClass) {
+            const alertBox = document.getElementById('auth-alert');
+            alertBox.className = `mb-4 p-3 rounded-lg text-sm ${bgClass}`;
+            alertBox.innerText = msg;
+            alertBox.classList.remove('hidden');
+        }
+
+        function renderApp() {
+            const currentUser = getCurrentUser();
+
+            if(!currentUser || !currentUser.approved) {
+                document.getElementById('auth-view').classList.remove('hidden');
+                document.getElementById('app-view').classList.add('hidden');
+                document.getElementById('user-nav-area').innerHTML = '';
+            } else {
+                document.getElementById('auth-view').classList.add('hidden');
+                document.getElementById('app-view').classList.remove('hidden');
+
+                document.getElementById('user-nav-area').innerHTML = `
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-semibold text-white">${currentUser.name}</p>
+                        <p class="text-xs text-indigo-200">${currentUser.role}</p>
+                    </div>
+                    <button onclick="logout()" class="p-2 bg-indigo-800 hover:bg-indigo-900 rounded-lg text-indigo-200 hover:text-white transition cursor-pointer" title="Odhlásit se">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                    </button>
+                `;
+
+                const isAdmin = currentUser.role === 'Admin';
+                document.getElementById('create-event-btn').style.display = isAdmin ? 'inline-flex' : 'none';
+                document.getElementById('add-announcement-btn').style.display = isAdmin ? 'inline-block' : 'none';
+                document.getElementById('admin-users-actions').style.display = isAdmin ? 'inline-flex' : 'none';
+                document.getElementById('admin-events-actions').style.display = isAdmin ? 'inline-flex' : 'none';
+
+                const pendingUsers = state.users.filter(u => !u.approved);
+                const approvalsTabBtn = document.getElementById('tab-btn-approvals');
+                if(isAdmin) {
+                    approvalsTabBtn.classList.remove('hidden');
+                    document.getElementById('pending-badge').innerText = pendingUsers.length;
+                } else {
+                    approvalsTabBtn.classList.add('hidden');
+                }
+
+                const activeMembers = state.users.filter(u => u.approved);
+                const now = new Date();
+                const upcomingEventsCount = state.events.filter(ev => new Date(ev.date) >= now).length;
+
+                document.getElementById('stat-members-count').innerText = `${activeMembers.length} / 40`;
+                document.getElementById('stat-events-count').innerText = upcomingEventsCount;
+                document.getElementById('stat-user-role').innerText = currentUser.role;
+
+                document.getElementById('prof-name').value = currentUser.name;
+                document.getElementById('prof-email').value = currentUser.email;
+                document.getElementById('prof-phone').value = currentUser.phone || '';
+                document.getElementById('prof-address').value = currentUser.address || '';
+                document.getElementById('prof-email-notify').checked = currentUser.emailNotify !== false;
+                document.getElementById('prof-password').value = '';
+
+                renderAnnouncements();
+                renderEvents();
+                renderCalendar();
+                renderMembers();
+                renderChat();
+                renderApprovals();
+            }
+
+            switchTab('dashboard');
+            lucide.createIcons();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-indigo-50', 'text-indigo-600', 'font-bold');
+            });
+
+            const targetTab = document.getElementById(`tab-${tabName}`);
+            if(targetTab) targetTab.classList.remove('hidden');
+            
+            const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+            if(activeBtn) activeBtn.classList.add('bg-indigo-50', 'text-indigo-600', 'font-bold');
+
+            // Pokud uživatel přepnul do záložky kalendáře ('events'), resetujeme zobrazení kalendáře na aktuální měsíc
+            if(tabName === 'events') {
+                state.calendarDate = new Date();
+                renderCalendar();
+            }
+        }
+
+        /* --- HLAVNÍ HLASOVACÍ KALENDÁŘ S RESETEM A TLAČITKEM NA DNES --- */
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-days-grid');
+            const monthTitle = document.getElementById('calendar-month-title');
+            if(!grid || !monthTitle) return;
+
+            const currentUser = getCurrentUser();
+            const isAdmin = currentUser && currentUser.role === 'Admin';
+            const year = state.calendarDate.getFullYear();
+            const month = state.calendarDate.getMonth();
+
+            const monthNames = ["Leden", "Únor", "Březen", "Duben", "Květen", "Červen", "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"];
+            monthTitle.innerText = `${monthNames[month]} ${year}`;
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+
+            let startingDay = firstDay.getDay() - 1; 
+            if(startingDay < 0) startingDay = 6;
+
+            const totalDays = lastDay.getDate();
+
+            const todayObj = new Date();
+            const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+
+            const eventMap = {};
+            state.events.forEach(ev => {
+                if(ev.date) {
+                    const dStr = ev.date.split('T')[0];
+                    if(!eventMap[dStr]) eventMap[dStr] = [];
+                    eventMap[dStr].push(ev);
+                }
+            });
+
+            let html = '';
+            for(let i = 0; i < startingDay; i++) {
+                html += `<div></div>`;
+            }
+
+            for(let d = 1; d <= totalDays; d++) {
+                const mStr = String(month + 1).padStart(2, '0');
+                const dStr = String(d).padStart(2, '0');
+                const dateKey = `${year}-${mStr}-${dStr}`;
+
+                const isToday = (dateKey === todayStr);
+                const dayBoxClass = isToday ? 'border-2 border-indigo-600 bg-indigo-50/30' : 'border border-slate-100 bg-slate-50/50';
+                const dayNumberClass = isToday ? 'bg-indigo-600 text-white w-5 h-5 rounded-full flex items-center justify-center font-bold text-[11px]' : 'text-slate-500 font-semibold';
+
+                const dayEvents = eventMap[dateKey] || [];
+                
+                let dayBadgesHtml = '';
+                if(dayEvents.length > 0) {
+                    dayBadgesHtml = dayEvents.map(ev => {
+                        const eventDate = new Date(ev.date);
+                        const isPast = eventDate < todayObj;
+
+                        let bgStyle = 'bg-rose-200 text-rose-900 border border-rose-400 font-bold'; 
+                        if (isPast) {
+                            bgStyle = 'bg-slate-300 text-slate-700 font-semibold';
+                        } else {
+                            const rsvps = ev.rsvp || {};
+                            const myRsvp = rsvps[currentUser.email] || 'NONE';
+                            if(myRsvp === 'YES') bgStyle = 'bg-emerald-500 text-white font-bold shadow-sm';
+                            if(myRsvp === 'MAYBE') bgStyle = 'bg-amber-500 text-white font-bold shadow-sm';
+                            if(myRsvp === 'NO') bgStyle = 'bg-rose-600 text-white font-bold shadow-sm';
+                        }
+
+                        return `
+                            <div class="mt-1 flex items-center justify-between p-1 rounded-md text-[10px] ${bgStyle} transition">
+                                <span onclick="openRsvpModal('${ev.id}')" class="truncate cursor-pointer flex-grow text-left" title="${isPast ? 'Proběhlá akce' : 'Hlasovat'}">${ev.title}</span>
+                                ${isAdmin ? `
+                                    <div class="flex items-center space-x-0.5 ml-1 shrink-0">
+                                        <button onclick="event.stopPropagation(); openEditEventModal('${ev.id}')" class="p-0.5 hover:bg-black/20 rounded text-current cursor-pointer" title="Upravit akci">
+                                            <i data-lucide="pencil" class="w-3 h-3"></i>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); deleteEventFromCalendar('${ev.id}')" class="p-0.5 hover:bg-black/20 rounded text-current cursor-pointer" title="Smazat akci">
+                                            <i data-lucide="trash-2" class="w-3 h-3"></i>
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                html += `
+                    <div class="min-h-[70px] p-1 rounded-xl ${dayBoxClass} flex flex-col justify-start">
+                        <div class="flex items-center justify-between px-1">
+                            <span class="${dayNumberClass}">${d}</span>
+                            ${isAdmin ? `
+                                <button type="button" onclick="openEventModalForDate('${dateKey}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold" title="Přidat akci v 20:00">+</button>
+                            ` : ''}
+                        </div>
+                        <div class="space-y-1 mt-0.5">
+                            ${dayBadgesHtml}
+                        </div>
+                    </div>
+                `;
+            }
+
+            grid.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function changeCalendarMonth(offset) {
+            state.calendarDate.setMonth(state.calendarDate.getMonth() + offset);
+            renderCalendar();
+        }
+
+        function resetCalendarToCurrentMonth() {
+            state.calendarDate = new Date();
+            renderCalendar();
+        }
+
+        /* --- INTELIGENTNÍ MAZÁNÍ AKCE Z KALENDÁŘE PRO ADMINA --- */
+        function deleteEventFromCalendar(eventId) {
+            const targetEv = state.events.find(e => e.id === eventId);
+            if(!targetEv) return;
+
+            const targetDateStr = targetEv.date.split('T')[0];
+            const sameDayEvents = state.events.filter(e => e.date.split('T')[0] === targetDateStr);
+
+            if(sameDayEvents.length <= 1) {
+                if(confirm(`Opravdu chcete smazat akci "${targetEv.title}" (${new Date(targetEv.date).toLocaleDateString('cs-CZ')})?`)) {
+                    state.events = state.events.filter(e => e.id !== eventId);
+                    saveState();
+                    renderCalendar();
+                    renderEvents();
+                }
+            } else {
+                let promptText = `V den ${targetDateStr} je naplánováno více akcí:\n\n`;
+                sameDayEvents.forEach((ev, idx) => {
+                    promptText += `${idx + 1}. ${ev.title} (${ev.date.split('T')[1] || '20:00'} - ${ev.location})\n`;
+                });
+                promptText += `\nZadejte číslo akce, kterou chcete smazat (nebo zrušte dialog):`;
+
+                const choice = prompt(promptText);
+                if(choice !== null) {
+                    const index = parseInt(choice.trim()) - 1;
+                    if(index >= 0 && index < sameDayEvents.length) {
+                        const eventToDelete = sameDayEvents[index];
+                        if(confirm(`Opravdu chcete smazat akci "${eventToDelete.title}"?`)) {
+                            state.events = state.events.filter(e => e.id !== eventToDelete.id);
+                            saveState();
+                            renderCalendar();
+                            renderEvents();
+                        }
+                    } else {
+                        alert("Neplatná volba.");
+                    }
+                }
+            }
+        }
+
+        function openRsvpModal(eventId) {
+            const ev = state.events.find(e => e.id === eventId);
+            if(!ev) return;
+
+            state.activeRsvpEventId = eventId;
+            document.getElementById('rsvp-modal-title').innerText = ev.title;
+            document.getElementById('rsvp-modal-info').innerText = `${new Date(ev.date).toLocaleString('cs-CZ')} | ${ev.location}`;
+            document.getElementById('rsvp-modal').classList.remove('hidden');
+        }
+
+        function closeRsvpModal() {
+            document.getElementById('rsvp-modal').classList.add('hidden');
+            state.activeRsvpEventId = null;
+        }
+
+        function setRsvpFromModal(status) {
+            if(state.activeRsvpEventId) {
+                setRsvp(state.activeRsvpEventId, status);
+                closeRsvpModal();
+            }
+        }
+
+        function renderModalCalendar() {
+            const grid = document.getElementById('modal-cal-grid');
+            const title = document.getElementById('modal-cal-title');
+            if(!grid || !title) return;
+
+            const year = state.modalCalDate.getFullYear();
+            const month = state.modalCalDate.getMonth();
+
+            const monthNames = ["Leden", "Únor", "Březen", "Duben", "Květen", "Červen", "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"];
+            title.innerText = `${monthNames[month]} ${year}`;
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+
+            let startingDay = firstDay.getDay() - 1; 
+            if(startingDay < 0) startingDay = 6;
+
+            const totalDays = lastDay.getDate();
+
+            const existingDates = {};
+            state.events.forEach(ev => {
+                if(ev.date) existingDates[ev.date.split('T')[0]] = true;
+            });
+
+            let html = '';
+            for(let i = 0; i < startingDay; i++) {
+                html += `<div></div>`;
+            }
+
+            for(let d = 1; d <= totalDays; d++) {
+                const mStr = String(month + 1).padStart(2, '0');
+                const dStr = String(d).padStart(2, '0');
+                const dateKey = `${year}-${mStr}-${dStr}`;
+
+                const hasEvent = existingDates[dateKey];
+                const underlineClass = hasEvent ? 'underline decoration-indigo-600 decoration-2 font-bold text-indigo-700 bg-indigo-50' : 'text-slate-600 hover:bg-slate-200';
+
+                html += `
+                    <button type="button" 
+                            onclick="selectModalDate('${dateKey}')" 
+                            class="py-1 rounded cursor-pointer transition ${underlineClass}"
+                            title="${hasEvent ? 'V tento den už je naplánovaná akce!' : 'Vybrat tento den'}">
+                        ${d}
+                    </button>
+                `;
+            }
+
+            grid.innerHTML = html;
+        }
+
+        function changeModalCalMonth(offset) {
+            state.modalCalDate.setMonth(state.modalCalDate.getMonth() + offset);
+            renderModalCalendar();
+        }
+
+        function selectModalDate(dateStr) {
+            document.getElementById('event-date').value = `${dateStr}T20:00`;
+        }
+
+        function openEventModalForDate(dateStr) {
+            openEventModal(`${dateStr}T20:00`);
+        }
+
+        function toggleShowPastEvents() {
+            state.showPastEvents = !state.showPastEvents;
+            const btnText = document.getElementById('past-events-btn-text');
+            const btn = document.getElementById('toggle-past-events-btn');
+            const subtitle = document.getElementById('events-subtitle');
+
+            if(state.showPastEvents) {
+                btnText.innerText = "Skrýt minulá akce";
+                btn.classList.add('bg-indigo-100', 'text-indigo-800', 'border-indigo-300');
+                subtitle.innerText = "Zobrazeny jsou všechny akce (nadcházející i minulá historie)";
+            } else {
+                btnText.innerText = "Zobrazit minulá akce";
+                btn.classList.remove('bg-indigo-100', 'text-indigo-800', 'border-indigo-300');
+                subtitle.innerText = "Dnešní den je v kalendáři zvýrazněn. Proběhlé akce jsou barevně odlišeny jako konané.";
+            }
+            renderEvents();
+        }
+
+        function exportUsersData() {
+            const dataToExport = { type: "nb_users_backup", users: state.users, exportDate: new Date().toISOString() };
+            downloadJsonFile(dataToExport, `nase-banda-users-${new Date().toISOString().split('T')[0]}.json`);
+        }
+
+        function triggerImportUsers() {
+            document.getElementById('import-users-file-input').click();
+        }
+
+        function importUsersData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    const usersList = imported.users || (Array.isArray(imported) ? imported : null);
+                    if (usersList && Array.isArray(usersList)) {
+                        if (confirm("Opravdu chcete načíst tento seznam členů?")) {
+                            state.users = usersList;
+                            saveState();
+                            renderApp();
+                            alert("Seznam členů byl úspěšně importován!");
+                        }
+                    } else { alert("Soubor neobsahuje platná data."); }
+                } catch (err) { alert("Chyba při čtení: " + err.message); }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function exportEventsData() {
+            const dataToExport = { type: "nb_events_backup", events: state.events, exportDate: new Date().toISOString() };
+            downloadJsonFile(dataToExport, `nase-banda-events-${new Date().toISOString().split('T')[0]}.json`);
+        }
+
+        function triggerImportEvents() {
+            document.getElementById('import-events-file-input').click();
+        }
+
+        function importEventsData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    const eventsList = imported.events || (Array.isArray(imported) ? imported : null);
+                    if (eventsList && Array.isArray(eventsList)) {
+                        if (confirm("Opravdu chcete načíst tyto akce?")) {
+                            state.events = eventsList;
+                            saveState();
+                            renderApp();
+                            alert("Seznam akcí byl úspěšně importován!");
+                        }
+                    } else { alert("Soubor neobsahuje platná data."); }
+                } catch (err) { alert("Chyba při čtení: " + err.message); }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function downloadJsonFile(dataObj, filename) {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataObj, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", filename);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function handleSaveOwnProfile(e) {
+            e.preventDefault();
+            const currentUser = getCurrentUser();
+            const alertBox = document.getElementById('profile-alert');
+            
+            const newName = document.getElementById('prof-name').value.trim();
+            const newEmail = document.getElementById('prof-email').value.trim().toLowerCase();
+            const newPhone = document.getElementById('prof-phone').value.trim();
+            const newAddress = document.getElementById('prof-address').value.trim();
+            const newEmailNotify = document.getElementById('prof-email-notify').checked;
+            const newPassword = document.getElementById('prof-password').value.trim();
+
+            if(newEmail !== currentUser.email && state.users.some(u => u.email.toLowerCase() === newEmail)) {
+                alertBox.className = "p-3 rounded-lg text-sm bg-rose-100 text-rose-800";
+                alertBox.innerText = "Tento e-mail již používá jiný člen!";
+                alertBox.classList.remove('hidden');
+                return;
+            }
+
+            if(newEmail !== currentUser.email) {
+                state.events.forEach(ev => {
+                    if(ev.rsvp && ev.rsvp[currentUser.email]) {
+                        ev.rsvp[newEmail] = ev.rsvp[currentUser.email];
+                        delete ev.rsvp[currentUser.email];
+                    }
+                });
+            }
+
+            currentUser.name = newName;
+            currentUser.email = newEmail;
+            currentUser.phone = newPhone;
+            currentUser.address = newAddress;
+            currentUser.emailNotify = newEmailNotify;
+            if(newPassword) currentUser.password = newPassword;
+
+            state.currentUserEmail = newEmail;
+            saveState();
+
+            alertBox.className = "p-3 rounded-lg text-sm bg-emerald-100 text-emerald-800";
+            alertBox.innerText = "Váš profil byl úspěšně aktualizován!";
+            alertBox.classList.remove('hidden');
+
+            renderApp();
+            switchTab('profile');
+        }
+
+        function renderAnnouncements() {
+            const container = document.getElementById('announcements-list');
+            if(state.announcements.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-500 italic">Žádná oznámení.</p>`;
+                return;
+            }
+
+            container.innerHTML = state.announcements.map(a => `
+                <div class="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-semibold text-slate-900">${a.title}</h4>
+                        <span class="text-xs text-slate-400">${new Date(a.date).toLocaleDateString('cs-CZ')}</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mt-1">${a.body}</p>
+                </div>
+            `).join('');
+        }
+
+        function openAnnouncementModal() {
+            const title = prompt("Název oznámení:");
+            const body = prompt("Text oznámení:");
+            if(title && body) {
+                state.announcements.unshift({ title, body, date: new Date().toISOString() });
+                saveState();
+                renderAnnouncements();
+            }
+        }
+
+        function renderEvents() {
+            const container = document.getElementById('events-list');
+            const currentUser = getCurrentUser();
+            const now = new Date();
+
+            let displayedEvents = state.events;
+            if(!state.showPastEvents) {
+                displayedEvents = displayedEvents.filter(ev => new Date(ev.date) >= now);
+            }
+            displayedEvents = displayedEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            if(displayedEvents.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-500 italic">Žádné akce k zobrazení.</p>`;
+                return;
+            }
+
+            container.innerHTML = displayedEvents.map(ev => {
+                const rsvps = ev.rsvp || {};
+                const comments = ev.comments || [];
+                const isPast = new Date(ev.date) < now;
+                
+                const yesMembers = state.users.filter(u => u.approved && rsvps[u.email] === 'YES');
+                const maybeMembers = state.users.filter(u => u.approved && rsvps[u.email] === 'MAYBE');
+                const noMembers = state.users.filter(u => u.approved && rsvps[u.email] === 'NO');
+
+                const userStatus = rsvps[currentUser.email] || 'NONE';
+                const hasVoted = userStatus !== 'NONE';
+
+                let borderClass = hasVoted ? 'border-l-4 border-l-emerald-500 bg-emerald-50/10' : 'border-l-4 border-l-rose-500 bg-rose-50/10';
+                if(isPast) {
+                    borderClass = 'border-l-4 border-l-slate-400 bg-slate-50/80 opacity-90';
+                }
+
+                let statusBadge = hasVoted 
+                    ? `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Hlasováno</span>`
+                    : `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-rose-100 text-rose-800"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Nevyplněno (Nehlasováno)</span>`;
+
+                if(isPast) {
+                    statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-200 text-slate-700"><i data-lucide="archive" class="w-3.5 h-3.5"></i> Proběhlá akce</span>`;
+                }
+
+                return `
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 ${borderClass} p-5 space-y-4 transition">
+                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2 border-b border-slate-100 pb-3">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                    <h3 class="font-bold text-slate-900 text-lg">${ev.title}</h3>
+                                    ${statusBadge}
+                                </div>
+                                <p class="text-xs font-semibold ${isPast ? 'text-slate-500' : 'text-indigo-600'} mt-0.5 flex items-center gap-1">
+                                    <i data-lucide="clock" class="w-3.5 h-3.5"></i> ${new Date(ev.date).toLocaleString('cs-CZ')}
+                                </p>
+                                <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                    <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> ${ev.location}
+                                </p>
+                            </div>
+                            ${currentUser.role === 'Admin' ? `
+                                <div class="flex items-center space-x-1 self-start">
+                                    <button onclick="openEditEventModal('${ev.id}')" class="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition cursor-pointer" title="Upravit akci">
+                                        <i data-lucide="pencil" class="w-4 h-4"></i>
+                                    </button>
+                                    <button onclick="deleteEvent('${ev.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition cursor-pointer" title="Smazat akci">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        ${ev.desc ? `<p class="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">${ev.desc}</p>` : ''}
+
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs text-slate-500">
+                                <span>Potvrzená účast: ${yesMembers.length} z ${ev.capacity}</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div class="${isPast ? 'bg-slate-400' : 'bg-emerald-500'} h-full transition-all duration-300" style="width: ${Math.min(100, (yesMembers.length / ev.capacity) * 100)}%"></div>
+                            </div>
+
+                            ${!isPast ? `
+                                <div class="grid grid-cols-3 gap-2 pt-2">
+                                    <button onclick="setRsvp('${ev.id}', 'YES')" class="py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${userStatus === 'YES' ? 'bg-emerald-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-600'}">
+                                        <i data-lucide="check" class="w-3.5 h-3.5"></i> Jdu
+                                    </button>
+                                    <button onclick="setRsvp('${ev.id}', 'MAYBE')" class="py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${userStatus === 'MAYBE' ? 'bg-amber-500 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-amber-50 hover:text-amber-600'}">
+                                        <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Možná
+                                    </button>
+                                    <button onclick="setRsvp('${ev.id}', 'NO')" class="py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${userStatus === 'NO' ? 'bg-rose-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-600'}">
+                                        <i data-lucide="x" class="w-3.5 h-3.5"></i> Nejdu
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100 text-xs">
+                            <div class="bg-emerald-50/60 p-2.5 rounded-lg border border-emerald-100">
+                                <span class="font-bold text-emerald-800 block mb-1"> Jdou (${yesMembers.length}):</span>
+                                <div class="space-y-0.5 text-emerald-900">
+                                    ${yesMembers.length > 0 ? yesMembers.map(m => `<div class="truncate">• ${m.name}</div>`).join('') : '<span class="text-slate-400 italic">Nikdo</span>'}
+                                </div>
+                            </div>
+                            <div class="bg-amber-50/60 p-2.5 rounded-lg border border-amber-100">
+                                <span class="font-bold text-amber-800 block mb-1"> Možná (${maybeMembers.length}):</span>
+                                <div class="space-y-0.5 text-amber-900">
+                                    ${maybeMembers.length > 0 ? maybeMembers.map(m => `<div class="truncate">• ${m.name}</div>`).join('') : '<span class="text-slate-400 italic">Nikdo</span>'}
+                                </div>
+                            </div>
+                            <div class="bg-rose-50/60 p-2.5 rounded-lg border border-rose-100">
+                                <span class="font-bold text-rose-800 block mb-1">❌ Nejdu (${noMembers.length}):</span>
+                                <div class="space-y-0.5 text-rose-900">
+                                    ${noMembers.length > 0 ? noMembers.map(m => `<div class="truncate">• ${m.name}</div>`).join('') : '<span class="text-slate-400 italic">Nikdo</span>'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-100 space-y-3">
+                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1">
+                                <i data-lucide="message-square" class="w-3.5 h-3.5 text-indigo-600"></i>
+                                Diskuze k akci (${comments.length})
+                            </h4>
+
+                            <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                                ${comments.length > 0 ? comments.map(c => `
+                                    <div class="bg-slate-50 p-2 rounded text-xs border border-slate-100">
+                                        <div class="flex justify-between text-slate-500 mb-0.5">
+                                            <span class="font-bold text-indigo-600">${c.author}</span>
+                                            <span class="text-[10px]">${new Date(c.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                                        </div>
+                                        <p class="text-slate-700">${c.text}</p>
+                                    </div>
+                                `).join('') : '<p class="text-xs text-slate-400 italic">Žádný komentář k akci.</p>'}
+                            </div>
+
+                            <form onsubmit="addEventComment(event, '${ev.id}')" class="flex gap-2">
+                                <input type="text" id="comment-input-${ev.id}" placeholder="Napsat poznámku k akci..." required
+                                       class="flex-grow px-3 py-1.5 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                <button type="submit" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-xs transition cursor-pointer">
+                                    Komentovat
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        function setRsvp(eventId, status) {
+            const ev = state.events.find(e => e.id === eventId);
+            if(ev) {
+                if(!ev.rsvp) ev.rsvp = {};
+                ev.rsvp[state.currentUserEmail] = status;
+                saveState();
+                renderEvents();
+                renderCalendar();
+            }
+        }
+
+        function addEventComment(e, eventId) {
+            e.preventDefault();
+            const input = document.getElementById(`comment-input-${eventId}`);
+            const currentUser = getCurrentUser();
+            const ev = state.events.find(e => e.id === eventId);
+
+            if(input && ev && input.value.trim()) {
+                if(!ev.comments) ev.comments = [];
+                ev.comments.push({
+                    author: currentUser.name,
+                    text: input.value.trim(),
+                    time: new Date().toISOString()
+                });
+                input.value = '';
+                saveState();
+                renderEvents();
+            }
+        }
+
+        function openEventModal(defaultDateTime = null) {
+            document.getElementById('event-modal-title').innerText = "Vytvořit Novou Akci";
+            document.getElementById('event-edit-id').value = "";
+            document.getElementById('event-title').value = "Trénink";
+            
+            if(defaultDateTime) {
+                document.getElementById('event-date').value = defaultDateTime;
+            } else {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const yyyy = tomorrow.getFullYear();
+                const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+                const dd = String(tomorrow.getDate()).padStart(2, '0');
+                document.getElementById('event-date').value = `${yyyy}-${mm}-${dd}T20:00`;
+            }
+
+            document.getElementById('event-location').value = "Tělocvična";
+            document.getElementById('event-capacity').value = "14";
+            document.getElementById('event-desc').value = "";
+            
+            renderModalCalendar();
+            document.getElementById('event-modal').classList.remove('hidden');
+        }
+
+        function openEditEventModal(eventId) {
+            const ev = state.events.find(e => e.id === eventId);
+            if(!ev) return;
+
+            document.getElementById('event-modal-title').innerText = "Upravit Akci";
+            document.getElementById('event-edit-id').value = ev.id;
+            document.getElementById('event-title').value = ev.title;
+            document.getElementById('event-date').value = ev.date;
+            document.getElementById('event-location').value = ev.location;
+            document.getElementById('event-capacity').value = ev.capacity || 14;
+            document.getElementById('event-desc').value = ev.desc || "";
+            
+            renderModalCalendar();
+            document.getElementById('event-modal').classList.remove('hidden');
+        }
+
+        function closeEventModal() {
+            document.getElementById('event-modal').classList.add('hidden');
+        }
+
+        function handleSaveEvent(e) {
+            e.preventDefault();
+            const editId = document.getElementById('event-edit-id').value;
+            const title = document.getElementById('event-title').value.trim();
+            const date = document.getElementById('event-date').value;
+            const location = document.getElementById('event-location').value.trim();
+            const capacity = parseInt(document.getElementById('event-capacity').value) || 14;
+            const desc = document.getElementById('event-desc').value.trim();
+
+            if (editId) {
+                const ev = state.events.find(e => e.id === editId);
+                if (ev) {
+                    ev.title = title;
+                    ev.date = date;
+                    ev.location = location;
+                    ev.capacity = capacity;
+                    ev.desc = desc;
+                }
+            } else {
+                const newEv = {
+                    id: Date.now().toString(),
+                    title: title,
+                    date: date,
+                    location: location,
+                    capacity: capacity,
+                    desc: desc,
+                    rsvp: {},
+                    comments: []
+                };
+                state.events.push(newEv);
+            }
+
+            saveState();
+            closeEventModal();
+            
+            switchTab('events');
+            renderCalendar();
+            renderEvents();
+        }
+
+        function deleteEvent(id) {
+            if(confirm("Opravdu chcete smazat tuto akci?")) {
+                state.events = state.events.filter(e => e.id !== id);
+                saveState();
+                renderCalendar();
+                renderEvents();
+            }
+        }
+
+        function renderMembers() {
+            const container = document.getElementById('members-list');
+            const search = (document.getElementById('member-search')?.value || '').toLowerCase();
+            const currentUser = getCurrentUser();
+            const activeMembers = state.users.filter(u => u.approved && (
+                u.name.toLowerCase().includes(search) || 
+                (u.phone && u.phone.includes(search)) || 
+                (u.address && u.address.toLowerCase().includes(search))
+            ));
+
+            container.innerHTML = activeMembers.map(m => `
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between space-y-3">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center space-x-3 overflow-hidden">
+                            <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm shrink-0">
+                                ${m.name.substring(0, 2).toUpperCase()}
+                            </div>
+                            <div class="overflow-hidden">
+                                <h4 class="font-bold text-slate-800 text-sm truncate">${m.name}</h4>
+                                <span class="inline-block text-[10px] font-semibold px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md mt-0.5">${m.role}</span>
+                            </div>
+                        </div>
+
+                        ${currentUser.role === 'Admin' ? `
+                            <div class="flex items-center space-x-1 shrink-0">
+                                <button onclick="openAdminUserModal('${m.id}')" class="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition cursor-pointer" title="Upravit člena">
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                </button>
+                                ${m.id !== currentUser.id ? `
+                                    <button onclick="toggleUserAdminRole('${m.id}')" class="text-xs px-2 py-1 rounded border border-slate-200 hover:bg-slate-50 font-medium text-slate-600 cursor-pointer" title="Změnit roli">
+                                        ${m.role === 'Admin' ? 'Odebrat Admina' : 'Dát Admina'}
+                                    </button>
+                                    <button onclick="deleteUser('${m.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition cursor-pointer" title="Smazat člena z týmu">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="space-y-1 pt-2 border-t border-slate-100 text-xs text-slate-600">
+                        <p class="flex items-center gap-1.5 truncate" title="${m.email}">
+                            <i data-lucide="mail" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+                            <span class="truncate">${m.email}</span>
+                        </p>
+                        <p class="flex items-center gap-1.5 truncate">
+                            <i data-lucide="phone" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+                            <span>${m.phone || '<span class="text-slate-400 italic">Bez telefonu</span>'}</span>
+                        </p>
+                        <p class="flex items-center gap-1.5 truncate">
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+                            <span>${m.address || '<span class="text-slate-400 italic">Bez adresy</span>'}</span>
+                        </p>
+                        <p class="flex items-center gap-1.5 text-[11px] pt-1">
+                            <i data-lucide="bell" class="w-3.5 h-3.5 ${m.emailNotify !== false ? 'text-emerald-600' : 'text-slate-300'} shrink-0"></i>
+                            <span class="${m.emailNotify !== false ? 'text-emerald-700 font-medium' : 'text-slate-400'}">
+                                ${m.emailNotify !== false ? 'E-mailové pripomenutí: ZAPNUTO' : 'E-mailové pripomenutí: VYPNUTO'}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function openAddUserModal() {
+            document.getElementById('admin-add-name').value = '';
+            document.getElementById('admin-add-email').value = '';
+            document.getElementById('admin-add-phone').value = '';
+            document.getElementById('admin-add-address').value = '';
+            document.getElementById('admin-add-password').value = '';
+            document.getElementById('admin-add-role').value = 'Hráč';
+            document.getElementById('admin-add-user-modal').classList.remove('hidden');
+        }
+
+        function closeAddUserModal() {
+            document.getElementById('admin-add-user-modal').classList.add('hidden');
+        }
+
+        function handleAdminAddUser(e) {
+            e.preventDefault();
+            const name = document.getElementById('admin-add-name').value.trim();
+            const email = document.getElementById('admin-add-email').value.trim().toLowerCase();
+            const phone = document.getElementById('admin-add-phone').value.trim();
+            const address = document.getElementById('admin-add-address').value.trim();
+            const password = document.getElementById('admin-add-password').value.trim();
+            const role = document.getElementById('admin-add-role').value;
+
+            if(state.users.some(u => u.email.toLowerCase() === email)) {
+                alert('Člen s tímto e-mailem již v systému existuje!');
+                return;
+            }
+
+            const newUser = {
+                id: Date.now().toString(),
+                name: name,
+                email: email,
+                password: password,
+                phone: phone,
+                address: address,
+                emailNotify: true,
+                role: role,
+                approved: true,
+                createdAt: new Date().toISOString()
+            };
+
+            state.users.push(newUser);
+            saveState();
+            closeAddUserModal();
+            renderMembers();
+            renderApp();
+            alert(`Člen ${name} byl úspěšně přidán do týmu!`);
+        }
+
+        function openAdminUserModal(userId) {
+            const target = state.users.find(u => u.id === userId);
+            if(target) {
+                document.getElementById('admin-edit-userid').value = target.id;
+                document.getElementById('admin-edit-name').value = target.name;
+                document.getElementById('admin-edit-email').value = target.email;
+                document.getElementById('admin-edit-phone').value = target.phone || '';
+                document.getElementById('admin-edit-address').value = target.address || '';
+                document.getElementById('admin-edit-notify').checked = target.emailNotify !== false;
+                document.getElementById('admin-edit-password').value = '';
+                document.getElementById('admin-user-modal').classList.remove('hidden');
+            }
+        }
+
+        function closeAdminUserModal() {
+            document.getElementById('admin-user-modal').classList.add('hidden');
+        }
+
+        function handleAdminSaveUser(e) {
+            e.preventDefault();
+            const userId = document.getElementById('admin-edit-userid').value;
+            const target = state.users.find(u => u.id === userId);
+
+            if(target) {
+                const oldEmail = target.email;
+                const newName = document.getElementById('admin-edit-name').value.trim();
+                const newEmail = document.getElementById('admin-edit-email').value.trim().toLowerCase();
+                const newPhone = document.getElementById('admin-edit-phone').value.trim();
+                const newAddress = document.getElementById('admin-edit-address').value.trim();
+                const newNotify = document.getElementById('admin-edit-notify').checked;
+                const newPassword = document.getElementById('admin-edit-password').value.trim();
+
+                if(newEmail !== oldEmail && state.users.some(u => u.email.toLowerCase() === newEmail)) {
+                    alert("Tento e-mail již používá jiný uživatel!");
+                    return;
+                }
+
+                if(newEmail !== oldEmail) {
+                    state.events.forEach(ev => {
+                        if(ev.rsvp && ev.rsvp[oldEmail]) {
+                            ev.rsvp[newEmail] = ev.rsvp[oldEmail];
+                            delete ev.rsvp[oldEmail];
+                        }
+                    });
+                }
+
+                target.name = newName;
+                target.email = newEmail;
+                target.phone = newPhone;
+                target.address = newAddress;
+                target.emailNotify = newNotify;
+                if(newPassword) target.password = newPassword;
+
+                saveState();
+                closeAdminUserModal();
+                renderMembers();
+                renderApp();
+            }
+        }
+
+        function toggleUserAdminRole(userId) {
+            const target = state.users.find(u => u.id === userId);
+            if(target) {
+                target.role = target.role === 'Admin' ? 'Hráč' : 'Admin';
+                saveState();
+                renderMembers();
+                renderApp();
+            }
+        }
+
+        function deleteUser(userId) {
+            const target = state.users.find(u => u.id === userId);
+            if(target && confirm(`Opravdu chcete smazat člena ${target.name} z týmu?`)) {
+                state.users = state.users.filter(u => u.id !== userId);
+                saveState();
+                renderMembers();
+                renderApp();
+            }
+        }
+
+        function renderChat() {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = state.chat.map(c => `
+                <div class="p-3 rounded-lg bg-slate-50 border border-slate-100 max-w-lg">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-bold text-indigo-600">${c.author}</span>
+                        <span class="text-[10px] text-slate-400">${new Date(c.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    </div>
+                    <p class="text-sm text-slate-700">${c.text}</p>
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendChatMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const currentUser = getCurrentUser();
+            if(input.value.trim()) {
+                state.chat.push({
+                    author: currentUser.name,
+                    text: input.value.trim(),
+                    time: new Date().toISOString()
+                });
+                input.value = '';
+                saveState();
+                renderChat();
+            }
+        }
+
+        function renderApprovals() {
+            const container = document.getElementById('approvals-list');
+            const pendingUsers = state.users.filter(u => !u.approved);
+
+            if(pendingUsers.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-500 italic">Žádné čekající žádosti o schválení.</p>`;
+                return;
+            }
+
+            container.innerHTML = pendingUsers.map(u => `
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h4 class="font-bold text-slate-800">${u.name}</h4>
+                        <p class="text-xs text-slate-500">${u.email} | ${u.phone || 'Bez telefonu'} | ${u.address || 'Bez adresy'}</p>
+                        <span class="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">
+                            Žádost o roli: ${u.role}
+                        </span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="approveUser('${u.id}', 'Hráč')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow transition cursor-pointer">
+                            Schválit jako Hráče
+                        </button>
+                        <button onclick="approveUser('${u.id}', 'Admin')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow transition cursor-pointer">
+                            Schválit jako Admina
+                        </button>
+                        <button onclick="rejectUser('${u.id}')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg shadow transition cursor-pointer">
+                            Zamítnout
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function approveUser(userId, assignedRole) {
+            const u = state.users.find(x => x.id === userId);
+            if(u) {
+                u.approved = true;
+                u.role = assignedRole;
+                saveState();
+                renderApp();
+            }
+        }
+
+        function rejectUser(userId) {
+            state.users = state.users.filter(x => x.id !== userId);
+            saveState();
+            renderApp();
+        }
+    </script>
+</body>
+</html>
